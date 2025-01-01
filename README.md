@@ -37,5 +37,3 @@ Then adjust the ships "topSpeed" value to whatever seems fun. For example:
 
         topSpeed: 20,
 
-## Known issues:
-The game currently is built to run on 60hz monitors. Faster refresh rates will increase the game speed. I'll probably fix this eventually. This can be fixed on an per system level by adjusting the speeds of objects as demonstrated in the "Editing section".
