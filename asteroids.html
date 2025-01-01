@@ -38,11 +38,15 @@
 	<script>
 		const canvas = document.getElementById("playSpace");
 		const context = canvas.getContext("2d");
+
+		//fps control variables
+		const fps = 60;
+		const fpsInterval = 1000/fps;
+		var then = Date.now();
+		
 		let gameScore = 0;
 		let gameTime = 0;
 		let keys = {};
-		
-		let rightArrowPressed = false, leftArrowPressed = false, upArrowPressed = false, spacePressed = false;
 		var gameOn = true;
 		var ammoList = [];
 		var asteroidList = [];
@@ -50,11 +54,18 @@
 		var shipDebrisList = [];
 //LOOP		
 		function gameLoop(){
-			asteroidSpawnTime();
-			update();
-			render();
-			gameTime++;
-			requestAnimationFrame(gameLoop);
+			if(gameOn && fpsControl()){
+				asteroidSpawnTime();
+				update();
+				render();
+				gameTime++;
+				requestAnimationFrame(gameLoop);
+			} else {
+				console.log("tripped");
+				//setTimeout(() => {
+					gameLoop();
+				//}, 1);
+			}
 		}
 		
 		function update(){
@@ -84,10 +95,27 @@
 			gameText();
 		}
 
+		function fpsControl(){
+			var now = Date.now();
+			var elapsed = now - then;
+			if(elapsed >= fpsInterval){
+				then = now - (elapsed % fpsInterval);
+				return true;
+			}
+			return false;
+		}
+
+//GAME INFO
 		function gameText() {
 			document.getElementById("extraLivesText").innerHTML = "Extra Lives: " + ship.lives;
 			document.getElementById("gameScore").innerHTML = gameScore;
 			document.getElementById("totalAsteroidsText").innerHTML = "Asteroids: " + asteroidList.length;
+		}
+
+		function gameOver(){
+			alert("Game Over \nRefresh (F5) to restart");
+			gameOn = false;
+			return;
 		}
 
 //SHIP
@@ -187,9 +215,7 @@
 
 		function shipCollision(){
 			if(ship.lives <= 0){
-				alert("game over");
-				gameOn = false;
-				return;
+				gameOver();
 			} else {
 				ship.lives--;
 				ship.visible = false;
@@ -255,7 +281,7 @@
 			this.x = x;
 			this.y = y;
 			this.directionOfTravel = directionOfTravel; //radians
-			console.log(directionOfTravel);
+			//console.log(directionOfTravel);
 			this.speed = Math.floor(Math.random() * 3) + 1;
 			this.dx = Math.sin(this.directionOfTravel) * this.speed;
 			this.dy = Math.cos(this.directionOfTravel) * this.speed;
