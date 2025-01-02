@@ -42,7 +42,7 @@
 		//fps control variables
 		const fps = 60;
 		const fpsInterval = 1000/fps;
-		var then = Date.now();
+		var then = performance.now();
 		
 		let gameScore = 0;
 		let gameTime = 0;
@@ -54,15 +54,14 @@
 		var shipDebrisList = [];
 //LOOP		
 		function gameLoop(){
-			if(gameOn && fpsControl()){
-				asteroidSpawnTime();
-				update();
-				render();
-				gameTime++;
+			if(gameOn){
+				if(fpsControl){
+					asteroidSpawnTime();
+					update();
+					render();
+					gameTime++;
+				}
 				requestAnimationFrame(gameLoop);
-			} else {
-				//console.log("tripped");
-				gameLoop();
 			}
 		}
 		
@@ -94,7 +93,7 @@
 		}
 
 		function fpsControl(){
-			var now = Date.now();
+			var now = performance.now();
 			var elapsed = now - then;
 			if(elapsed >= fpsInterval){
 				then = now - (elapsed % fpsInterval);
@@ -469,12 +468,11 @@
 				newAsteroid();
 			}
 			
-			//60 for fps
-			if(gameTime % (startSpawn * 60) == 0){
+			if(gameTime % (startSpawn * fps) == 0){
 				newAsteroid();
 			}
 			
-			if(gameTime % (changeTime * 60) == 0 && startSpawn > 1){
+			if(gameTime % (changeTime * fps) == 0 && startSpawn > 1){
 				startSpawn--;
 			}
 		}
@@ -504,7 +502,7 @@
 			} while (badDirectionList.includes(directionOfTravel));
 
 			const rad = directionOfTravel * (Math.PI/180)
-			const asteroid = new asteroidSpecs(locX, locY, 10, rad, 2);
+			const asteroid = new asteroidSpecs(locX, locY, 10, rad, 3);
 			asteroidList.push(asteroid);
 		}
 
@@ -599,15 +597,21 @@
 			if(asteroid.stage > 1){
 				const direction1 = asteroid.directionOfTravel + Math.PI/4; //45 degrees off
 				const direction2 = asteroid.directionOfTravel - Math.PI/4;
-				const asteroid1 = new asteroidSpecs(asteroid.x, asteroid.y, 5, direction1, 1);
-				const asteroid2 = new asteroidSpecs(asteroid.x, asteroid.y, 5, direction2, 1);
+				const asteroid1 = new asteroidSpecs(asteroid.x, asteroid.y, (asteroid.scale/2), direction1, (asteroid.stage - 1));
+				const asteroid2 = new asteroidSpecs(asteroid.x, asteroid.y, (asteroid.scale/2), direction2, (asteroid.stage - 1));
 				asteroidList.push(asteroid1, asteroid2);
-				gameScore += 100;
-				asteroidDebris(asteroid);
-			} else {
-				gameScore += 200;
-				asteroidDebris(asteroid);
 			}
+			switch (asteroid.stage){
+				case 3:
+					gameScore += 100;
+					break;
+				case 2:
+					gameScore += 200;
+					break;
+				case 3:
+					gameScore += 300;
+			}
+			asteroidDebris(asteroid);
 			asteroid.inPlay = false;
 		}
 
