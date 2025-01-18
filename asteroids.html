@@ -44,7 +44,10 @@
 		const fpsInterval = 1000/fps;
 		var then = performance.now();
 		
+		const shipLives = 3;
+
 		let gameScore = 0;
+		let topScore = 0;
 		let gameTime = 0;
 		let keys = {};
 		var gameOn = true;
@@ -61,8 +64,13 @@
 					render();
 					gameTime++;
 				}
-				requestAnimationFrame(gameLoop);
+			} else {
+				moveShipDebris();
+				moveAsteroidDebris();
+				render();
+				gameOver();
 			}
+			requestAnimationFrame(gameLoop);
 		}
 		
 		function update(){
@@ -109,12 +117,6 @@
 			document.getElementById("totalAsteroidsText").innerHTML = "Asteroids: " + asteroidList.length;
 		}
 
-		function gameOver(){
-			alert("Game Over \nRefresh (F5) to restart");
-			gameOn = false;
-			return;
-		}
-
 //SHIP
 		const ship = {
 			x: canvas.width/2,
@@ -129,7 +131,7 @@
 			acceleration: 0.07,
 			turnRate: 3,
 			visible: true,
-			lives: 3,
+			lives: shipLives,
 			deathTimerDuration: 150,
 			deathTimer: 0,
 			invulnerabilityPotential: 300,
@@ -212,7 +214,8 @@
 
 		function shipCollision(){
 			if(ship.lives <= 0){
-				gameOver();
+				gameOn = false;
+				ship.visible = false;
 			} else {
 				ship.lives--;
 				ship.visible = false;
@@ -638,6 +641,41 @@
 					debris.inPlay = false;
 				}
 			});
+		}
+
+//GAMEOVER
+		function gameOver(){
+			const textX = canvas.width/2;
+			const textY = canvas.height/4;			
+
+			context.save();
+			context.font = "50px Orbitron";
+			context.fillStyle = ship.color;
+			context.textAlign = "center";
+			context.fillText("Game Over", textX, textY);
+
+			context.font = "25px Orbitron";
+			context.fillText("Press \"Enter\" to play again.", textX, textY + 30);
+			context.fillText("Your score: " + gameScore, textX, textY + 60);
+			if(gameScore > topScore){topScore = gameScore};
+			context.fillText("Best score: " + topScore, textX, textY + 90);
+		
+			if(keys["Enter"]){
+				asteroidList.forEach(asteroid => {
+					asteroid.stage = 1;
+					asteroidBreak(asteroid);
+				});
+				gameScore = 0;
+				gameTime = 0;
+				ship.lives = shipLives;
+				ship.x = canvas.width/2;
+				ship.y = canvas.width/2;
+				ship.dx = 0;
+				ship.dy = 0;
+				ship.visible = true;
+
+				gameOn = true;
+			}
 		}
 
 //INPUTS
